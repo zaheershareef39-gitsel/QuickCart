@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
     imageUrl: { type: String, required: true },
     orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }],
     cartItems: { type: Object, default: {} },
-}, { mininimize: false })
+}, { minimize: false })
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
