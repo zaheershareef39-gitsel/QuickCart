@@ -2,6 +2,11 @@ import { Webhook } from "svix";
 import { inngest } from "@/config/inngest";
 
 export async function POST(req) {
+    if (!process.env.CLERK_WEBHOOK_SECRET) {
+        console.error("[Webhook Error] CLERK_WEBHOOK_SECRET is not configured in .env");
+        return Response.json({ error: "Webhook secret not configured" }, { status: 500 });
+    }
+
     const payload = await req.json();
     const headers = {
         "svix-id": req.headers.get("svix-id"),
@@ -13,14 +18,14 @@ export async function POST(req) {
 
     try {
         const evt = wh.verify(payload, headers);
-        console.log("[Clerk Webhook] Event received:", evt.type, "- Data:", JSON.stringify(evt.data, null, 2));
+        console.log("[Clerk Webhook] Event received:", evt.type, "- User ID:", evt.data.id);
 
         // Send event to Inngest
         const result = await inngest.send({
             name: `clerk.${evt.type}`,
             data: evt.data,
         });
-        console.log("[Inngest] Event sent:", result);
+        console.log("[Inngest] Event sent successfully");
 
         return Response.json({ success: true });
     } catch (err) {
